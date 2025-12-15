@@ -1,4 +1,12 @@
 .venv
 .env
+
 data/
+artifacts/
+
 .venv/
+
+
+
+*.db
+*.to_datetime(val_end)]
