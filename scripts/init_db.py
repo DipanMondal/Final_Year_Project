@@ -32,7 +32,7 @@ def main():
 
     con.commit()
     con.close()
-    print(f"Initialized DB at {DB_PATH}")
+    print(f"Initialized DB schema at {DB_PATH}")
 
 if __name__ == "__main__":
     main()
