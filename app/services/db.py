@@ -4,14 +4,19 @@ import pandas as pd
 
 import json
 import datetime as _dt
+import logging
+from .logging_utils import trace
+
+logger = logging.getLogger(__name__)
 
 DB_PATH = Path("data/weather.db")
 
 def _connect():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     return sqlite3.connect(DB_PATH)
-
+@trace
 def upsert_weather_daily(city_key: str, df: pd.DataFrame):
+    logger.info(f"DB upsert_weather_daily city={city_key} rows={len(df)}")
     df2 = df.copy()
     df2["date"] = df2["date"].dt.date.astype(str)
 
@@ -24,6 +29,7 @@ def upsert_weather_daily(city_key: str, df: pd.DataFrame):
     )
     con.commit()
     con.close()
+    logger.info(f"DB upsert_weather_daily done city={city_key} inserted={len(rows)}")
     return len(rows)
 
 def upsert_city_metadata(city_key: str, latitude: float, longitude: float, source: str, start_date: str, end_date: str):

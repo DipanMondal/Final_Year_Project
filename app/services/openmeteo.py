@@ -1,10 +1,15 @@
 import requests
 import pandas as pd
+import logging
+from .logging_utils import trace
+
+logger = logging.getLogger(__name__)
 
 GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search"
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 
 def geocode(city: str, country_code: str | None = None):
+    logger.debug(f"GEOCODE request city={city} country_code={country_code}")
     params = {"name": city, "count": 1, "language": "en", "format": "json"}
     if country_code:
         params["country_code"] = country_code
@@ -16,6 +21,7 @@ def geocode(city: str, country_code: str | None = None):
         raise ValueError(f"City not found: {city}")
 
     x = data["results"][0]
+    logger.debug(f"GEOCODE result lat={...} lon={...}")
     return {
         "name": x.get("name", city),
         "country": x.get("country", ""),
@@ -24,7 +30,9 @@ def geocode(city: str, country_code: str | None = None):
         "longitude": float(x["longitude"]),
     }
 
+@trace
 def fetch_daily(lat: float, lon: float, start: str, end: str):
+    logger.debug(f"ARCHIVE request lat={lat} lon={lon} start={start} end={end}")
     params = {
         "latitude": lat,
         "longitude": lon,
@@ -46,4 +54,5 @@ def fetch_daily(lat: float, lon: float, start: str, end: str):
     })
     df["date"] = pd.to_datetime(df["date"])
     df = df.sort_values("date").dropna()
+    logger.info(f"ARCHIVE rows_returned={len(df)}")
     return df
