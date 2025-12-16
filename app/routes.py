@@ -10,6 +10,12 @@ from .services.sarimax_forecast import ModelRegistry
 from .services.analysis_pipeline import run_city_analysis
 from .services.db import list_runs
 
+from .services.db import fetch_insights_cache
+from .services.utils import city_key
+
+from flask import render_template
+
+
 api = Blueprint("api", __name__)
 CORS(api)
 registry = ModelRegistry()
@@ -144,4 +150,30 @@ def runs():
     limit = int(request.args.get("limit") or "30")
     df = list_runs(limit=max(1, min(limit, 200)))
     return jsonify({"count": int(len(df)), "runs": df.to_dict(orient="records")})
+
+# ----------------- Insights -----------------
+
+@api.get("/insights/<city>")
+def insights(city):
+    country_code = (request.args.get("country_code") or "").strip() or None
+    key = city_key(city, country_code)
+
+    row = fetch_insights_cache(key)
+    if not row:
+        return jsonify({
+            "city_key": key,
+            "status": "missing",
+            "message": "No cached insights. Run POST /analyse/<city> first."
+        }), 404
+
+    return jsonify(row)
+    
+# -------------------- Dashboard --------------------
+
+@api.get("/dashboard/<city>")
+def dashboard(city):
+    country_code = (request.args.get("country_code") or "").strip() or ""
+    start = (request.args.get("start") or "2016-01-01").strip()
+    end = (request.args.get("end") or "2024-12-31").strip()
+    return render_template("dashboard.html", city=city, country_code=country_code, start=start, end=end)
 

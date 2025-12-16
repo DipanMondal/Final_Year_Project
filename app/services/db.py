@@ -14,6 +14,9 @@ DB_PATH = Path("data/weather.db")
 def _connect():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     return sqlite3.connect(DB_PATH)
+    
+# --------------- Weather Raw Data Upload -------------------
+    
 @trace
 def upsert_weather_daily(city_key: str, df: pd.DataFrame):
     logger.info(f"DB upsert_weather_daily city={city_key} rows={len(df)}")
@@ -41,6 +44,8 @@ def upsert_city_metadata(city_key: str, latitude: float, longitude: float, sourc
     """, (city_key, latitude, longitude, source, start_date, end_date))
     con.commit()
     con.close()
+    
+# ----------------------- Read Raw Weather Data ----------------------------------
 
 def fetch_history(city: str, start: str | None, end: str | None):
     con = _connect()
@@ -66,6 +71,9 @@ def list_cities():
     con.close()
     return df
     
+
+
+# ----------------------------- Analysis Data Handling ---------------------------
 
 def upsert_analysis_daily(city_key: str, df: pd.DataFrame):
     # df columns must match analysis_daily fields (except city)
@@ -138,6 +146,9 @@ def run_log_start(run_id: str, endpoint: str, city: str, params: dict):
     con.commit()
     con.close()
 
+
+# --------------------- Log handling -------------------
+
 def run_log_end(run_id: str, status: str, duration_ms: int, result: dict | None = None, error: str | None = None):
     con = _connect()
     cur = con.cursor()
@@ -162,4 +173,72 @@ def list_runs(limit: int = 30):
     )
     con.close()
     return df
+    
+    
+# -------------------- Insight Handling --------------------
+
+def upsert_insights_cache(
+    city_key: str,
+    analysis_run_id: str,
+    data_start: str | None,
+    data_end: str | None,
+    status: str,
+    payload: dict | None,
+    error: str | None = None,
+    version: int = 1
+):
+    con = _connect()
+    cur = con.cursor()
+    cur.execute("""
+        INSERT OR REPLACE INTO insights_cache
+        (city, updated_at, analysis_run_id, data_start, data_end, status, payload_json, error, version)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        city_key,
+        _dt.datetime.utcnow().isoformat(),
+        analysis_run_id,
+        data_start,
+        data_end,
+        status,
+        json.dumps(payload) if payload is not None else None,
+        error,
+        int(version)
+    ))
+    con.commit()
+    con.close()
+
+def fetch_insights_cache(city_key: str):
+    con = _connect()
+    cur = con.cursor()
+    cur.execute("""
+        SELECT city, updated_at, analysis_run_id, data_start, data_end, status, payload_json, error, version
+        FROM insights_cache
+        WHERE city=?
+    """, (city_key,))
+    row = cur.fetchone()
+    con.close()
+
+    if not row:
+        return None
+
+    city, updated_at, run_id, data_start, data_end, status, payload_json, error, version = row
+    payload = None
+    if payload_json:
+        try:
+            payload = json.loads(payload_json)
+        except Exception:
+            payload = None
+
+    return {
+        "city": city,
+        "updated_at": updated_at,
+        "analysis_run_id": run_id,
+        "data_start": data_start,
+        "data_end": data_end,
+        "status": status,
+        "payload": payload,
+        "error": error,
+        "version": version
+    }
+
 

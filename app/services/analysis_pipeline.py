@@ -15,21 +15,16 @@ from .db import (
     read_analysis_monthly,
     run_log_start,
     run_log_end,
+    upsert_insights_cache,
 )
 from .analysis_features import build_daily_analysis_features, build_monthly_analysis
 from .triclustering import tricluster_year_month_features
 
+from .insights import compute_insights_payload
+
 logger = logging.getLogger(__name__)
 
-def run_city_analysis(
-    city: str,
-    country_code: str | None,
-    start: str,
-    end: str,
-    auto_ingest: bool = True,
-    k_years: int = 3,
-    k_months: int = 3
-):
+def run_city_analysis(city: str, country_code: str | None, start: str, end: str, auto_ingest: bool = True, k_years: int = 3, k_months: int = 3):
     run_id = uuid.uuid4().hex
     pipeline_t0 = time.time()
 
@@ -46,6 +41,17 @@ def run_city_analysis(
 
     # store run in DB (high-level tracking)
     run_log_start(run_id, endpoint="/analyse/<city>", city=key, params=params)
+
+    upsert_insights_cache(
+        city_key=key,
+        analysis_run_id=run_id,
+        data_start=start,
+        data_end=end,
+        status="running",
+        payload=None,
+        error=None,
+        version=1
+    )
 
     # bind run_id to every log line inside this pipeline
     with bind_run_id(run_id):
@@ -143,6 +149,26 @@ def run_city_analysis(
             # 9) Triclustering
             _step_start("triclustering")
             tri = tricluster_year_month_features(monthly_db, k_years=k_years, k_months=k_months)
+            
+            insights_payload = compute_insights_payload(
+                city_key=key,
+                daily_feat_df=daily_feat,
+                monthly_df=monthly_db,
+                tri=tri,
+                run_id=run_id
+            )
+
+            upsert_insights_cache(
+                city_key=key,
+                analysis_run_id=run_id,
+                data_start=insights_payload.get("data_start"),
+                data_end=insights_payload.get("data_end"),
+                status="ok",
+                payload=insights_payload,
+                error=None,
+                version=1
+            )
+
             cluster_count = len(tri.get("clusters", [])) if isinstance(tri, dict) else 0
             _step_end("triclustering", {"clusters": int(cluster_count)})
 
@@ -162,6 +188,16 @@ def run_city_analysis(
             return result
 
         except Exception as e:
+            upsert_insights_cache(
+                city_key=key,
+                analysis_run_id=run_id,
+                data_start=start,
+                data_end=end,
+                status="error",
+                payload=None,
+                error=str(e),
+                version=1
+            )
             total_ms = int((time.time() - pipeline_t0) * 1000)
 
             # Full stack trace in logs

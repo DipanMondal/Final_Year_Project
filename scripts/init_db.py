@@ -79,6 +79,20 @@ def main():
         error TEXT
     );
     """)
+    
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS insights_cache (
+        city TEXT PRIMARY KEY,
+        updated_at TEXT,
+        analysis_run_id TEXT,
+        data_start TEXT,
+        data_end TEXT,
+        status TEXT,                 -- ok | running | error
+        payload_json TEXT,
+        error TEXT,
+        version INTEGER
+    );
+    """)
 
     con.commit()
     con.close()

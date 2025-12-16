@@ -1,0 +1,118 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #0b0f19;
+    color: #e8eefc;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 18px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.sub {
+    opacity: 0.8;
+    margin-top: 6px;
+}
+
+.actions button {
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.status {
+    margin: 14px 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #141a2a;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.card {
+    background: #141a2a;
+    padding: 12px;
+    border-radius: 14px;
+}
+
+.card .k {
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+.card .v {
+    font-size: 18px;
+    margin-top: 6px;
+}
+
+.panel {
+    background: #141a2a;
+    padding: 14px;
+    border-radius: 16px;
+    margin-top: 14px;
+}
+
+.charts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+.tables {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+td,
+th {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 6px;
+}
+
+.cluster {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #233056;
+    margin-right: 6px;
+    font-size: 12px;
+}
+
+@media (max-width: 900px) {
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .tables {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Weather Insights Dashboard</title>
+  <link rel="stylesheet" href="/static/dashboard.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1 id="title">Dashboard</h1>
+        <div class="sub" id="subtitle"></div>
+      </div>
+      <div class="actions">
+        <button id="rerunBtn">Re-run analysis</button>
+      </div>
+    </div>
+
+    <div id="statusBox" class="status"></div>
+
+    <div class="grid" id="cards"></div>
+
+    <div class="panel">
+      <h2>Monthly Climate Profile</h2>
+      <div class="charts">
+        <canvas id="chartMean"></canvas>
+        <canvas id="chartStd"></canvas>
+        <canvas id="chartDiurnal"></canvas>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Patterns Discovered</h2>
+      <div id="clusters"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Extremes</h2>
+      <div class="tables">
+        <div>
+          <h3>Top Anomaly Days</h3>
+          <table id="tblAnom"></table>
+        </div>
+        <div>
+          <h3>Top Hot Days</h3>
+          <table id="tblHot"></table>
+        </div>
+        <div>
+          <h3>Top Cold Days</h3>
+          <table id="tblCold"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.DASH_CITY = "{{ city }}";
+    window.DASH_COUNTRY = "{{ country_code }}";
+    window.DASH_START = "{{ start }}";
+    window.DASH_END = "{{ end }}";
+  </script>
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>
