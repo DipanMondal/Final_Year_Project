@@ -7,6 +7,8 @@ from .services.db import upsert_weather_daily, upsert_city_metadata, fetch_histo
 from .services.utils import city_key
 from .services.sarimax_train import train_city_sarimax
 from .services.sarimax_forecast import ModelRegistry
+from .services.analysis_pipeline import run_city_analysis
+from .services.db import list_runs
 
 api = Blueprint("api", __name__)
 CORS(api)
@@ -15,6 +17,8 @@ registry = ModelRegistry()
 @api.get("/health")
 def health():
     return jsonify({"status": "ok"})
+
+# ------------ Cities --------------
 
 @api.get("/cities")
 def cities():
@@ -63,6 +67,8 @@ def add_city():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ------------ History --------------
+
 @api.get("/history")
 def history():
     city = (request.args.get("city") or "").strip()
@@ -76,6 +82,8 @@ def history():
     key = city_key(city, country_code)
     df = fetch_history(key, start, end)
     return jsonify({"city": key, "count": int(len(df)), "rows": df.to_dict(orient="records")})
+
+# ------------ Forecast --------------
 
 @api.get("/forecast")
 def forecast():
@@ -101,3 +109,39 @@ def forecast():
         return jsonify({"error": f"City '{key}' not trained yet. Call POST /cities first."}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+        
+# ------------ Analysis --------------
+        
+@api.post("/analyse/<city>")
+def analyse_city(city):
+    country_code = (request.args.get("country_code") or "").strip() or None
+    start = (request.args.get("start") or "2016-01-01").strip()
+    end = (request.args.get("end") or "2024-12-31").strip()
+
+    auto_ingest = (request.args.get("auto_ingest") or "1").strip() == "1"
+
+    k_years = int(request.args.get("k_years") or "3")
+    k_months = int(request.args.get("k_months") or "3")
+
+    try:
+        out = run_city_analysis(
+            city=city,
+            country_code=country_code,
+            start=start,
+            end=end,
+            auto_ingest=auto_ingest,
+            k_years=k_years,
+            k_months=k_months
+        )
+        return jsonify(out)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ------------ Log Runs --------------
+
+@api.get("/runs")
+def runs():
+    limit = int(request.args.get("limit") or "30")
+    df = list_runs(limit=max(1, min(limit, 200)))
+    return jsonify({"count": int(len(df)), "runs": df.to_dict(orient="records")})
+

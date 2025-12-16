@@ -30,6 +30,56 @@ def main():
     );
     """)
 
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS analysis_daily (
+        city TEXT NOT NULL,
+        date TEXT NOT NULL,
+        tmin REAL,
+        tmax REAL,
+        tavg REAL,
+        diurnal_range REAL,
+        delta_1 REAL,
+        delta_7 REAL,
+        roll_mean_7 REAL,
+        roll_std_7 REAL,
+        anomaly_z REAL,
+        doy_sin REAL,
+        doy_cos REAL,
+        time_idx REAL,
+        PRIMARY KEY (city, date)
+    );
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS analysis_monthly (
+        city TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        month INTEGER NOT NULL,
+        tavg_mean REAL,
+        tavg_std REAL,
+        diurnal_mean REAL,
+        roll_std_mean REAL,
+        anomaly_mean REAL,
+        delta_1_mean REAL,
+        PRIMARY KEY (city, year, month)
+    );
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS execution_runs (
+        run_id TEXT PRIMARY KEY,
+        started_at TEXT,
+        finished_at TEXT,
+        endpoint TEXT,
+        city TEXT,
+        status TEXT,
+        duration_ms INTEGER,
+        params_json TEXT,
+        result_json TEXT,
+        error TEXT
+    );
+    """)
+
     con.commit()
     con.close()
     print(f"Initialized DB schema at {DB_PATH}")

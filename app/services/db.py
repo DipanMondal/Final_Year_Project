@@ -2,6 +2,9 @@ import sqlite3
 from pathlib import Path
 import pandas as pd
 
+import json
+import datetime as _dt
+
 DB_PATH = Path("data/weather.db")
 
 def _connect():
@@ -56,3 +59,101 @@ def list_cities():
     )
     con.close()
     return df
+    
+
+def upsert_analysis_daily(city_key: str, df: pd.DataFrame):
+    # df columns must match analysis_daily fields (except city)
+    x = df.copy()
+    x["date"] = pd.to_datetime(x["date"]).dt.date.astype(str)
+    x["city"] = city_key
+
+    cols = [
+        "city","date","tmin","tmax","tavg",
+        "diurnal_range","delta_1","delta_7","roll_mean_7","roll_std_7",
+        "anomaly_z","doy_sin","doy_cos","time_idx"
+    ]
+    x = x[cols]
+
+    con = _connect()
+    cur = con.cursor()
+    cur.executemany(
+        """
+        INSERT OR REPLACE INTO analysis_daily
+        (city,date,tmin,tmax,tavg,diurnal_range,delta_1,delta_7,roll_mean_7,roll_std_7,
+         anomaly_z,doy_sin,doy_cos,time_idx)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """,
+        [tuple(r) for r in x.itertuples(index=False, name=None)]
+    )
+    con.commit()
+    con.close()
+    return len(x)
+
+def upsert_analysis_monthly(city_key: str, dfm: pd.DataFrame):
+    x = dfm.copy()
+    x["city"] = city_key
+    cols = ["city","year","month","tavg_mean","tavg_std","diurnal_mean","roll_std_mean","anomaly_mean","delta_1_mean"]
+    x = x[cols]
+
+    con = _connect()
+    cur = con.cursor()
+    cur.executemany(
+        """
+        INSERT OR REPLACE INTO analysis_monthly
+        (city,year,month,tavg_mean,tavg_std,diurnal_mean,roll_std_mean,anomaly_mean,delta_1_mean)
+        VALUES (?,?,?,?,?,?,?,?,?)
+        """,
+        [tuple(r) for r in x.itertuples(index=False, name=None)]
+    )
+    con.commit()
+    con.close()
+    return len(x)
+
+def read_analysis_monthly(city_key: str):
+    con = _connect()
+    df = pd.read_sql_query(
+        "SELECT * FROM analysis_monthly WHERE city=? ORDER BY year, month",
+        con, params=[city_key]
+    )
+    con.close()
+    return df
+
+def run_log_start(run_id: str, endpoint: str, city: str, params: dict):
+    con = _connect()
+    cur = con.cursor()
+    cur.execute(
+        """
+        INSERT OR REPLACE INTO execution_runs
+        (run_id, started_at, endpoint, city, status, params_json)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (run_id, _dt.datetime.utcnow().isoformat(), endpoint, city, "running", json.dumps(params))
+    )
+    con.commit()
+    con.close()
+
+def run_log_end(run_id: str, status: str, duration_ms: int, result: dict | None = None, error: str | None = None):
+    con = _connect()
+    cur = con.cursor()
+    cur.execute(
+        """
+        UPDATE execution_runs
+        SET finished_at=?, status=?, duration_ms=?, result_json=?, error=?
+        WHERE run_id=?
+        """,
+        (_dt.datetime.utcnow().isoformat(), status, duration_ms,
+         json.dumps(result) if result is not None else None,
+         error, run_id)
+    )
+    con.commit()
+    con.close()
+
+def list_runs(limit: int = 30):
+    con = _connect()
+    df = pd.read_sql_query(
+        "SELECT run_id, started_at, finished_at, endpoint, city, status, duration_ms, error FROM execution_runs ORDER BY started_at DESC LIMIT ?",
+        con, params=[limit]
+    )
+    con.close()
+    return df
+

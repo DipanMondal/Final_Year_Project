@@ -4,6 +4,8 @@
 data/
 artifacts/
 __pycache__/
+log/
+logs/
 
 .venv/
 
@@ -11,3 +13,4 @@ __pycache__/
 
 *.db
 *.to_datetime(val_end)]
+*.log
