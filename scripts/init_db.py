@@ -88,7 +88,7 @@ def main():
         data_start TEXT,
         data_end TEXT,
         status TEXT,                 -- ok | running | error
-        payload_json TEXT,
+        mongo_id TEXT,               -- stores reference to MongoDB document
         error TEXT,
         version INTEGER
     );

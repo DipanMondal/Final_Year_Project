@@ -183,7 +183,7 @@ def upsert_insights_cache(
     data_start: str | None,
     data_end: str | None,
     status: str,
-    payload: dict | None,
+    mongo_id: str | None = None,
     error: str | None = None,
     version: int = 1
 ):
@@ -191,7 +191,7 @@ def upsert_insights_cache(
     cur = con.cursor()
     cur.execute("""
         INSERT OR REPLACE INTO insights_cache
-        (city, updated_at, analysis_run_id, data_start, data_end, status, payload_json, error, version)
+        (city, updated_at, analysis_run_id, data_start, data_end, status, mongo_id, error, version)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         city_key,
@@ -200,7 +200,7 @@ def upsert_insights_cache(
         data_start,
         data_end,
         status,
-        json.dumps(payload) if payload is not None else None,
+        mongo_id,
         error,
         int(version)
     ))
@@ -211,7 +211,7 @@ def fetch_insights_cache(city_key: str):
     con = _connect()
     cur = con.cursor()
     cur.execute("""
-        SELECT city, updated_at, analysis_run_id, data_start, data_end, status, payload_json, error, version
+        SELECT city, updated_at, analysis_run_id, data_start, data_end, status, mongo_id, error, version
         FROM insights_cache
         WHERE city=?
     """, (city_key,))
@@ -221,13 +221,7 @@ def fetch_insights_cache(city_key: str):
     if not row:
         return None
 
-    city, updated_at, run_id, data_start, data_end, status, payload_json, error, version = row
-    payload = None
-    if payload_json:
-        try:
-            payload = json.loads(payload_json)
-        except Exception:
-            payload = None
+    city, updated_at, run_id, data_start, data_end, status, mongo_id, error, version = row
 
     return {
         "city": city,
@@ -236,7 +230,7 @@ def fetch_insights_cache(city_key: str):
         "data_start": data_start,
         "data_end": data_end,
         "status": status,
-        "payload": payload,
+        "mongo_id": mongo_id,
         "error": error,
         "version": version
     }

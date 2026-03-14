@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 import pandas as pd
+from bson.objectid import ObjectId
 
 from .services.openmeteo import geocode, fetch_daily
 from .services.db import upsert_weather_daily, upsert_city_metadata, fetch_history, list_cities
@@ -12,6 +13,7 @@ from .services.db import list_runs
 
 from .services.db import fetch_insights_cache
 from .services.utils import city_key
+from .services.mongo_client import insights_collection
 
 from flask import render_template
 
@@ -165,7 +167,17 @@ def insights(city):
             "status": "missing",
             "message": "No cached insights. Run POST /analyse/<city> first."
         }), 404
+        
+    payload = None
+    print(row.get("mongo_id"))
+    
+    payload = insights_collection.find_one({"_id": ObjectId(row["mongo_id"])})
+    if payload:
+        # Remove Mongo internal _id to avoid confusion
+        payload.pop("_id", None)
 
+    row["payload"] = payload
+    row.pop("mongo_id", None)
     return jsonify(row)
     
 # -------------------- Dashboard --------------------
