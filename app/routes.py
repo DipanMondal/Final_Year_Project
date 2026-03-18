@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 from flask_cors import CORS
 import pandas as pd
 from bson.objectid import ObjectId
+import json
+from pathlib import Path
 
 from .services.openmeteo import geocode, fetch_daily
 from .services.db import upsert_weather_daily, upsert_city_metadata, fetch_history, list_cities
@@ -13,7 +15,6 @@ from .services.db import list_runs
 
 from .services.db import fetch_insights_cache
 from .services.utils import city_key
-from .services.mongo_client import insights_collection
 
 from flask import render_template
 
@@ -155,6 +156,17 @@ def runs():
 
 # ----------------- Insights -----------------
 
+def load_insights_payload_from_ref(payload_ref: str) -> dict | None:
+    if not payload_ref:
+        return None
+
+    p = Path(payload_ref)
+    if not p.exists():
+        return None
+
+    with p.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
 @api.get("/insights/<city>")
 def insights(city):
     country_code = (request.args.get("country_code") or "").strip() or None
@@ -171,10 +183,7 @@ def insights(city):
     payload = None
     print(row.get("mongo_id"))
     
-    payload = insights_collection.find_one({"_id": ObjectId(row["mongo_id"])})
-    if payload:
-        # Remove Mongo internal _id to avoid confusion
-        payload.pop("_id", None)
+    payload = load_insights_payload_from_ref(row["mongo_id"])
 
     row["payload"] = payload
     row.pop("mongo_id", None)
