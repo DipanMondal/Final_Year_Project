@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Add City • WeatherLens</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="nav-link" href="{{ url_for('api.home_page') }}">← Home</a>
+      <div class="topbar-title">Add City</div>
+      <div></div>
+    </header>
+
+    <main class="content-grid one-col">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Ingest weather history</h1>
+            <p class="panel-subtitle">
+              Add a city by sending a POST request to the ingestion pipeline.
+            </p>
+          </div>
+        </div>
+
+        <form id="addCityForm" class="form-grid">
+          <div class="form-field">
+            <label for="city">City name</label>
+            <input id="city" name="city" type="text" placeholder="Kolkata" required />
+          </div>
+
+          <div class="form-field">
+            <label for="country_code">Country code</label>
+            <input id="country_code" name="country_code" type="text" maxlength="2" placeholder="IN" required />
+          </div>
+
+          <div class="form-field">
+            <label for="start">Start date</label>
+            <input id="start" name="start" type="date" required />
+          </div>
+
+          <div class="form-field">
+            <label for="end">End date</label>
+            <input id="end" name="end" type="date" required />
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" id="submitBtn" type="submit">Add City</button>
+            <button class="btn btn-secondary" id="resetBtn" type="reset">Reset</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title panel-title-sm">Request preview</h2>
+            <p class="panel-subtitle">This is the JSON that will be sent to <code>/cities</code>.</p>
+          </div>
+        </div>
+        <pre class="code-box" id="requestPreview">{}</pre>
+      </section>
+
+      <section class="panel" id="responsePanel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title panel-title-sm">Response</h2>
+            <p class="panel-subtitle">Server response after ingestion starts.</p>
+          </div>
+        </div>
+        <div id="statusBox" class="status-box">Waiting for submission.</div>
+        <pre class="code-box" id="responseBox">{}</pre>
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='add_city.js') }}"></script>
+</body>
+</html>

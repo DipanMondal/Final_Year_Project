@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Forecast • WeatherLens</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="nav-link" href="{{ url_for('api.home_page') }}">← Home</a>
+      <div class="topbar-title">Make Forecast</div>
+      <div></div>
+    </header>
+
+    <main class="content-grid forecast-layout">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Forecast request</h1>
+            <p class="panel-subtitle">
+              Select a city and fetch forecast predictions from the backend.
+            </p>
+          </div>
+        </div>
+
+        <form id="forecastForm" class="form-grid">
+          <div class="form-field">
+            <label for="city">City</label>
+            <select id="city" name="city" required>
+              <option value="">Loading cities...</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="country_code">Country code</label>
+            <input id="country_code" name="country_code" type="text" maxlength="2" placeholder="IN" required />
+          </div>
+
+          <div class="form-field">
+            <label for="horizon">Forecast horizon (days)</label>
+            <input id="horizon" name="horizon" type="number" min="1" max="30" value="7" required />
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" id="forecastBtn" type="submit">Fetch Forecast</button>
+          </div>
+        </form>
+
+        <div class="panel-separator"></div>
+
+        <div class="status-box" id="forecastStatus">Ready.</div>
+
+        <div class="summary-cards" id="forecastCards"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title panel-title-sm">Forecast chart</h2>
+            <p class="panel-subtitle">Predicted average temperature with confidence bounds.</p>
+          </div>
+        </div>
+        <div class="chart-box">
+          <canvas id="forecastChart"></canvas>
+        </div>
+      </section>
+
+      <section class="panel forecast-table-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title panel-title-sm">Prediction table</h2>
+            <p class="panel-subtitle">Returned values from the backend.</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="forecastTable"></table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title panel-title-sm">Raw response</h2>
+            <p class="panel-subtitle">Useful for debugging API structure.</p>
+          </div>
+        </div>
+        <pre class="code-box" id="rawForecastBox">{}</pre>
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='forecast_page.js') }}"></script>
+</body>
+</html>

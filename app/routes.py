@@ -198,3 +198,27 @@ def dashboard(city):
     end = (request.args.get("end") or "2024-12-31").strip()
     return render_template("dashboard.html", city=city, country_code=country_code, start=start, end=end)
 
+# -------------------- Home Page ----------------------
+
+@api.get("/")
+def home_page():
+    return render_template("home.html")
+
+# -------------------- Add City Page ----------------------
+
+@api.get("/add-city")
+def add_city_page():
+    return render_template("add_city.html")
+
+# -------------------- Forecast Page ----------------------
+
+@api.get("/forecast-page")
+def forecast_page():
+    return render_template("forecast_page.html")
+    
+# -------------------- Insight Page -----------------------
+
+@api.get("/insights-page")
+def insights_page():
+    return render_template("insights_page.html")
+    

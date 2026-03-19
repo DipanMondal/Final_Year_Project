@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WeatherLens</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-badge">WeatherLens</div>
+      <h1 class="hero-title">Interactive Weather Analytics & Forecasting</h1>
+      <p class="hero-subtitle">
+        Manage city data, run weather analysis, and generate forecasts from one place.
+      </p>
+    </header>
+
+    <main class="home-grid">
+      <button class="action-tile tile-primary" id="btnAddCity" type="button">
+        <div class="tile-icon">🏙️</div>
+        <div class="tile-title">Add City</div>
+        <div class="tile-desc">
+          Ingest a city's weather history into the system.
+        </div>
+      </button>
+
+      <button class="action-tile tile-disabled" id="btnAnalysis" type="button" disabled>
+        <div class="tile-topline">
+          <span class="tile-icon">🧠</span>
+          <span class="coming-soon">Coming Soon</span>
+        </div>
+        <div class="tile-title">Analyse a Region</div>
+        <div class="tile-desc">
+          TriHSPAM-based regional analysis will be enabled here next.
+        </div>
+      </button>
+
+      <button class="action-tile tile-accent" id="btnForecast" type="button">
+        <div class="tile-icon">📈</div>
+        <div class="tile-title">Make Forecast</div>
+        <div class="tile-desc">
+          Select a city and generate a temperature forecast.
+        </div>
+      </button>
+	  
+	  <button class="action-tile tile-info" id="btnInsights" type="button">
+        <div class="tile-icon">🔎</div>
+        <div class="tile-title">Insights</div>
+        <div class="tile-desc">
+          Open the dashboard for a selected city and explore weather insights.
+        </div>
+      </button>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='home.js') }}"></script>
+</body>
+</html>

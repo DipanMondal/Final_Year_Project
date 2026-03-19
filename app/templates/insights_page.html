@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Insights • WeatherLens</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='landing.css') }}">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="nav-link" href="/">← Home</a>
+      <div class="topbar-title">Open Insights Dashboard</div>
+      <div></div>
+    </header>
+
+    <main class="content-grid one-col">
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h1 class="panel-title">Choose a city</h1>
+            <p class="panel-subtitle">
+              Select a city from the dropdown and open its dashboard page.
+            </p>
+          </div>
+        </div>
+
+        <form id="insightsForm" class="form-grid">
+          <div class="form-field">
+            <label for="city">City</label>
+            <select id="city" name="city" required>
+              <option value="">Loading cities...</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" id="openDashboardBtn" type="submit">
+              Open Dashboard
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title panel-title-sm">Selected route</h2>
+            <p class="panel-subtitle">
+              This is the dashboard URL that will be opened.
+            </p>
+          </div>
+        </div>
+        <div id="statusBox" class="status-box">Waiting for selection.</div>
+        <pre class="code-box" id="routePreview">/dashboard/</pre>
+      </section>
+    </main>
+  </div>
+
+  <script src="{{ url_for('static', filename='insights_page.js') }}"></script>
+</body>
+</html>
